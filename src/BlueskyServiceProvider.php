@@ -35,8 +35,6 @@ final class BlueskyServiceProvider extends PackageServiceProvider
             httpClient: $this->app->make(HttpClient::class),
             embedResolver: $this->app->make(EmbedResolver::class),
             baseUrl: $this->app->make(Config::class)->get('services.bluesky.base_url', default: BlueskyClient::DEFAULT_BASE_URL),
-            username: $this->app->make(Config::class)->get('services.bluesky.username'),
-            password: $this->app->make(Config::class)->get('services.bluesky.password'),
         ));
 
         $this->app->singleton(SessionManager::class, fn () => new SessionManager(

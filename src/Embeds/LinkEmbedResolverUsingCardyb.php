@@ -3,6 +3,7 @@
 namespace NotificationChannels\Bluesky\Embeds;
 
 use Illuminate\Support\Facades\Http;
+use NotificationChannels\Bluesky\BlueskyIdentity;
 use NotificationChannels\Bluesky\BlueskyPost;
 use NotificationChannels\Bluesky\BlueskyService;
 use NotificationChannels\Bluesky\Facets\Facet;
@@ -12,7 +13,7 @@ final class LinkEmbedResolverUsingCardyb implements EmbedResolver
 {
     public const ENDPOINT = 'https://cardyb.bsky.app/v1/extract';
 
-    public function resolve(BlueskyService $bluesky, BlueskyPost $post): ?Embed
+    public function resolve(BlueskyService $bluesky, BlueskyIdentity $identity, BlueskyPost $post): ?Embed
     {
         if (\count($post->facets) === 0) {
             return null;
@@ -29,10 +30,10 @@ final class LinkEmbedResolverUsingCardyb implements EmbedResolver
             return null;
         }
 
-        return $this->createEmbedFromUrl($bluesky, $firstLink->getFeatures()[0]->uri);
+        return $this->createEmbedFromUrl($bluesky, $identity, $firstLink->getFeatures()[0]->uri);
     }
 
-    public function createEmbedFromUrl(BlueskyService $bluesky, string $url): ?Embed
+    public function createEmbedFromUrl(BlueskyService $bluesky, BlueskyIdentity $identity, string $url): ?Embed
     {
         $embed = Http::get(self::ENDPOINT, [
             'url' => $url,
@@ -47,7 +48,7 @@ final class LinkEmbedResolverUsingCardyb implements EmbedResolver
             title: $embed->json('title'),
             description: $embed->json('description'),
             thumb: $bluesky
-                ->uploadBlob($embed->json('image'))
+                ->uploadBlob($identity, $embed->json('image'))
                 ->toArray(),
         );
     }

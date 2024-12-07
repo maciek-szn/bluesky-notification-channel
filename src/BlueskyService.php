@@ -18,23 +18,23 @@ final class BlueskyService
     ) {
     }
 
-    public function createPost(BlueskyPost|string $post): string
+    public function createPost(BlueskyIdentity $identity, BlueskyPost|string $post): string
     {
         return $this->client->createPost(
-            identity: $this->sessionManager->getIdentity(),
-            post: $this->resolvePost($post),
+            identity: $identity,
+            post: $this->resolvePost($identity, $post),
         );
     }
 
-    public function uploadBlob(string $pathOrUrl): Blob
+    public function uploadBlob(BlueskyIdentity $identity, string $pathOrUrl): Blob
     {
         return $this->client->uploadBlob(
-            identity: $this->sessionManager->getIdentity(),
+            identity: $identity,
             pathOrUrl: $pathOrUrl,
         );
     }
 
-    public function resolvePost(string|BlueskyPost $post): BlueskyPost
+    public function resolvePost(BlueskyIdentity $identity, string|BlueskyPost $post): BlueskyPost
     {
         if (\is_string($post)) {
             $post = BlueskyPost::make()->text($post);
@@ -44,21 +44,21 @@ final class BlueskyService
             $post->facets(facets: $this->facetsResolver->resolve($this, $post));
         }
 
-        if ($embed = $this->resolveEmbed($post)) {
+        if ($embed = $this->resolveEmbed($identity, $post)) {
             $post->embed(embed: $embed);
         }
 
         return $post;
     }
 
-    private function resolveEmbed(BlueskyPost $post): ?Embed
+    private function resolveEmbed(BlueskyIdentity $identity, BlueskyPost $post): ?Embed
     {
         if ($post->embedUrl) {
-            return $this->embedResolver->createEmbedFromUrl($this, $post->embedUrl);
+            return $this->embedResolver->createEmbedFromUrl($this, $identity, $post->embedUrl);
         }
 
         if ($post->automaticallyResolvesEmbeds()) {
-            return $this->embedResolver->resolve($this, $post);
+            return $this->embedResolver->resolve($this, $identity, $post);
         }
 
         return null;

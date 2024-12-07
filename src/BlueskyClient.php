@@ -25,8 +25,6 @@ final class BlueskyClient
         protected readonly HttpClient $httpClient,
         protected readonly EmbedResolver $embedResolver,
         protected readonly string $baseUrl,
-        protected readonly string $username,
-        protected readonly string $password,
     ) {
     }
 
@@ -43,13 +41,13 @@ final class BlueskyClient
         return $response->json('did');
     }
 
-    public function createIdentity(): BlueskyIdentity
+    public function createIdentity(string $username, string $password): BlueskyIdentity
     {
         $response = $this->httpClient
             ->asJson()
             ->post("{$this->baseUrl}/" . self::CREATE_SESSION_ENDPOINT, [
-                'identifier' => $this->username,
-                'password' => $this->password,
+                'identifier' => $username,
+                'password' => $password,
             ]);
 
         $this->ensureResponseSucceeded($response, CouldNotCreateSession::class);

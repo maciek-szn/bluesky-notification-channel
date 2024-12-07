@@ -16,29 +16,29 @@ class IdentityRepositoryUsingCache implements IdentityRepository
     ) {
     }
 
-    public function clearIdentity(): void
+    public function clearIdentity(string $username): void
     {
-        $this->cache->forget($this->key);
+        $this->cache->forget($this->key . ':' . md5($username));
     }
 
-    public function hasIdentity(): bool
+    public function hasIdentity(string $username): bool
     {
-        return $this->cache->get($this->key) instanceof BlueskyIdentity;
+        return $this->cache->get($this->key . ':' . md5($username)) instanceof BlueskyIdentity;
     }
 
-    public function getIdentity(): BlueskyIdentity
+    public function getIdentity(string $username, string $password): BlueskyIdentity
     {
-        if (!$this->hasIdentity()) {
+        if (!$this->hasIdentity($username)) {
             throw NoBlueskyIdentityFound::create();
         }
 
-        return $this->cache->get($this->key);
+        return $this->cache->get($this->key . ':' . md5($username));
     }
 
     public function setIdentity(BlueskyIdentity $identity): void
     {
         $this->cache->set(
-            key: $this->key,
+            key: $this->key . ':' . md5($identity->handle),
             value: $identity,
         );
     }

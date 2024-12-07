@@ -18,35 +18,35 @@ final class SessionManager
     /**
      * Gets an updated identity.
      */
-    public function getIdentity(): BlueskyIdentity
+    public function getIdentity(string $username, string $password): BlueskyIdentity
     {
-        $this->ensureHasIdentity();
-        $this->refreshIdentity();
+        $this->ensureHasIdentity($username, $password);
+        $this->refreshIdentity($username, $password);
 
-        return $this->identityRepository->getIdentity();
+        return $this->identityRepository->getIdentity($username, $password);
     }
 
     /**
      * Ensures an identity exists.
      */
-    private function ensureHasIdentity(): void
+    private function ensureHasIdentity(string $username, string $password): void
     {
-        if ($this->identityRepository->hasIdentity()) {
+        if ($this->identityRepository->hasIdentity($username)) {
             return;
         }
 
         $this->identityRepository->setIdentity(
-            identity: $this->client->createIdentity(),
+            identity: $this->client->createIdentity($username, $password),
         );
     }
 
     /**
      * Refreshes the existing identity.
      */
-    private function refreshIdentity(): void
+    private function refreshIdentity(string $username, string $password): void
     {
         $identity = $this->client->refreshIdentity(
-            identity: $this->identityRepository->getIdentity(),
+            identity: $this->identityRepository->getIdentity($username, $password),
         );
 
         $this->identityRepository->setIdentity($identity);
